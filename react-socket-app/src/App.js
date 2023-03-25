@@ -1,61 +1,19 @@
-import {useEffect, useState} from "react";
-import { socket } from './socket';
-import Chat from "./pages/Chat";
-import AskingUsernamePage from "./pages/AskingUsernamePage";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import RoomPage from "./pages/RoomPage";
 
 
 function App() {  
 
-  const [username, setUsername] = useState("");
-  const [userJoined, setUserJoined] = useState("")
-  const [recievedMessages, setRecievedMessages] = useState([]);
-
-  const [allJoinedUsers, setAllJoinedUsers] = useState([]);
-
-  
-  
-  
-  // leaving the chat
-    const handleLeaveChat = () => {
-
-      setRecievedMessages([...recievedMessages, `${userJoined} left the chat `])
-      console.log(recievedMessages)
-      socket.emit("disconnected", userJoined)
-      setUserJoined("")
-      setUsername("")
-      console.log(userJoined)
-
-  }
-
-
-  const handleJoinTheChat = () => {
-    setUserJoined(username)
-      console.log(userJoined)
-      socket.emit("new-user-joined", username);
-  }
-
-
-  useEffect(()=>{
-    socket.on("joined-the-chat", (newUser) => {
-      setAllJoinedUsers([...allJoinedUsers, newUser])
-    })
-
-    socket.on("left-the-chat", (disconnectedUser) => {
-      setAllJoinedUsers(allJoinedUsers.filter((user) => user !== disconnectedUser))
-    })
-  })
-
-  if (!userJoined){
-    return <AskingUsernamePage username={username} setUsername={setUsername} handleJoinTheChat={handleJoinTheChat}/>
-  }
-
-
-
   return (
     <div >
 
-      {userJoined && <Chat allJoinedUsers={allJoinedUsers} userJoined={userJoined} handleLeaveChat={handleLeaveChat} recievedMessages={recievedMessages} setRecievedMessages={setRecievedMessages}/>}
-      
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomePage/>}/>
+          <Route path="/:roomId" element={<RoomPage/>} />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }
