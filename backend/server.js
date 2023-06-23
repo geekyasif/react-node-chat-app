@@ -17,35 +17,29 @@ app.get("/", (req, res) => {
 })
 
 const users = {}
+const rooms = {}
 
 io.on('connection', (socket) => {
 
-
-    // connecting the user
-    socket.on("new-user-joined", (username) => {
-        users[socket.id] = username
-        console.log(`${username} is connected !`)
-        io.emit("joined-the-chat", username)
+    // connecting through a room
+    socket.on("join-new-room", (username, roomId) => {
+        socket.join(roomId);
+        console.log("new room created", username, roomId)
+        socket.to(roomId).emit("new-user-joined-the-room", {username, roomId})
     })
 
-
-    // recieving the message and brodcast to other user
-    socket.on("send-message", (message) => {
-            console.log(`message from backend:- ${message}`)
-        io.emit("recieve-message", {message: message, username: users[socket.id]})
+    
+    // receiving message from the room and broadcasting into the room
+    socket.on("send-message-in-room", (roomId, username, message) => {
+        console.log(roomId, message)
+        socket.to(roomId).emit("room-messages", {roomId, username, message})
     })
-
-
-    // disconnecting the user
-    socket.on("disconnected", (username) => {
-        io.emit("left-the-chat", username)
-        console.log("user is disconnected!", username)
-    })
-
 
 })
 
-server.listen(5000, () => {
-    console.log("Server is listening on 3001");
+const PORT = 5000;
+
+server.listen(PORT, () => {
+    console.log(`Server is listening on ${PORT}`);
 })
 
